@@ -1,0 +1,278 @@
+ ------
+ Usage
+ ------
+ Jesse McConnell <jesse.mcconnell@gmail.com>
+ Russell Gold <russ@gold-family.us>
+ ------
+ Wed Jan 4 2017
+ ------
+
+Usage
+
+ This plugin will process all <<<*.idl>>> files in the <<<sourceDirectory>>>
+ into a common generated sources output directory.  This will occur during the
+ <<<generate-sources>>> phase and the sources directory will be added to the project
+ for the <<<compile>>> phase.
+
+ To execute the goal in stand alone mode, you can type:
+
++-----
+<<<mvn idlj:generate>>>
++-----
+
+ By default, idlj-maven-plugin uses the built-in idlj compiler, if available. As of Java 9, uses the glassfish idl compiler.
+ To use the glassfish idl compiler explicitly, specify "glassfish" as the compiler type:
+
+-------------------
+...
+  <configuration>
+    <compiler>glassfish</compiler>
+  </configuration>
+...
+-------------------
+
+ To use the jacorb idl compiler, include a dependency on the jacorb idl compiler:
+
+-----
+<dependency>
+    <groupId>org.jacorb</groupId>
+    <artifactId>idl-compiler</artifactId>
+    <version>3.8</version>
+    <scope>compile</compile>
+</dependency>
+-----
+
+ (or any desired version) and specify "jacorb" as the compiler type:
+
+-------------------
+...
+  <configuration>
+    <compiler>jacorb</compiler>
+  </configuration>
+...
+-------------------
+
+
+* Available Configuration Options
+
+* compiler - Selects the underlying idl compiler to use (must be either "idlj" - the default, "glassfish", or "jacorb").
+
+-------------------
+...
+<compiler>idlj</compiler>
+...
+-------------------
+
+* includeDirs - Specifies which directories to search for included idl files.
+
+-------------------
+...
+<includeDirs>
+  <includeDir>all/includes</include>
+</includeDirs>
+...
+-------------------
+
+* sources - apply options per group of idl files
+
+-------------------
+...
+<sources>
+  <source>
+  ... items to select specific files and configure the group
+  </source>
+</sources>
+...
+-------------------
+
+* Available Configuration Options for each Source tag
+
+  * compatible - Forces the creation of Java sources compatibile with JDK:s older than version 1.4. Defaults to <<<true>>>, if not provided
+
+-------------------
+...
+<source>
+  <compatible>false</compatible>
+</source>
+...
+-------------------
+
+ * emitStubs - Whether the compiler should emit client stubs. Defaults to <<<true>>>, if not provided
+
+-------------------
+...
+<source>
+  <emitStubs>false</emitStubs>
+</source>
+...
+-------------------
+
+ * emitSkeletons - Whether the compiler should emit server skeletons. Defaults to <<<true>>>, if not provided.
+
+-------------------
+...
+<source>
+  <emitSkeletons>false</emitSkeletons>
+</source>
+...
+-------------------
+
+ * packagePrefix - (Jacorb-only) Specifies a single, global packageprefix to use for all modules. Defaults to
+ <<<"">>>,
+ if not provided.
+   
+-------------------
+...
+<source>
+  <packagePrefix>com.mycompany</packagePrefix>
+</source>
+...
+-------------------
+
+ * packagePrefixes - The list of package prefixes for certain types.
+
+   * <<<type>>> The simple name of either a top-level module, or an IDL type defined outside of any module
+
+   * <<<prefix>>> The generated Java package name with <<<prefix>>> for all files generated for that type
+
+-------------------
+...
+<source>
+  <packagePrefixes>
+    <packagePrefix>
+      <type>module1</type>
+      <prefix>com.mycompany.module1</prefix>
+    </packagePrefix>
+    <packagePrefix>
+      <type>module2</type>
+      <prefix>com.mycompany.module2</prefix>
+    </packagePrefix>
+  </packagePrefixes>
+</source>
+...
+-------------------
+
+ * packageTranslations - The list of package translations for certain types.
+
+   * <<<type>>> The simple name of either a top-level module, or an IDL type defined outside of any module
+
+   * <<<package>>> A java package name to use in place of the module name
+
+-------------------
+...
+<source>
+  <packageTranslations>
+    <packageTranslation>
+      <type>module1</type>
+      <package>com.mycompany.module1</package>
+    </packageTranslation>
+    <packageTranslation>
+      <type>module2</type>
+      <package>com.mycompany.module2</package>
+    </packageTranslation>
+  </packageTranslations>
+</source>
+...
+-------------------
+
+ * includes - Specifies which files to include in compilation.
+
+-------------------
+...
+<source>
+  <includes>
+    <include>YOUR_IDL_FILE.idl</include>
+    <include>*_tool.idl</include>
+  </includes>
+</source>
+...
+-------------------
+
+ * excludes - Specifies which files to exclude from compilation.
+ 
+-------------------
+...
+<source>
+  <excludes>
+    <exclude>YOUR_IDL_FILE.idl</exclude>
+    <exclude>*_tool.idl</exclude>
+  </excludes>
+</source>
+...
+-------------------
+ 
+ * defines - The list of preprocessor symbols to define.
+ 
+   * <<<symbol>>> The symbol to define
+ 
+   * <<<value>>> (Jacorb only) The value of the symbol. This is optional. If omitted, defaults to '1'
+
+-------------------
+...
+<source>
+  <defines>
+    <define>
+      <symbol>MY_SYMBOLE1</symbol>
+    </define>
+    <define>
+      <symbol>MY_SYMBOLE2</symbol>
+      <value>FOO</value>
+    </define>
+  </defines>
+</source>
+...
+------------------- 
+ 
+ * additionalArguments - The list of additional, compiler-specific arguments to use.
+ 
+-------------------
+...
+<source>
+  <additionalArguments>
+    <additionalArgument>-nowarn</additionalArgument>
+  </additionalArguments>
+</source>
+...
+------------------- 
+
+
+* Configuration example
+
+-------------------
+<project>
+  ...
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>idlj-maven-plugin</artifactId>
+        <version>1.1</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>generate</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <compiler>idlj</compiler>
+          <sources>
+            <source>
+              <includes>
+                <include>YOUR_IDL_FILE.idl</include>
+              </includes>
+              <emitStubs>true</emitStubs>
+              <emitSkeletons>true</emitSkeletons>
+            </source>
+          </sources>
+          <includeDirs>
+            <includeDir>AN_IDL_DIRECTORY</includeDir>
+            <includeDir>ANOTHER_IDL_DIRECTORY</includeDir>
+          </includeDirs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  ...
+</project>
+-------------------
